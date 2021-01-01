@@ -1,8 +1,14 @@
 # Ruby Conventions Plugin
 
-## Custom Navigate > Related Symbol... 
+Custom Ruby conventions for IntelliJ.
 
-#### Ruby Related Types provider:
+Currently:
+
+- Use a custom script to provide Ruby Type Definitions for `Navigate > Related Symbol...`
+
+### Related Ruby Type Definitions provider
+
+Example:
 
 `cat .rubyconventions/go_to_related`
 ```ruby
@@ -10,5 +16,13 @@
 
 require 'active_support/core_ext/string'
 
-puts ENV['RCP_TEXT'].camelize
+# get a selection and 
+symbol = ENV['RCP_TEXT'].camelize.gsub(/Service|Controller|Repository|Presenter/, '')
+
+# provide related types names
+puts symbol
+puts symbol + "Service"
+puts symbol + "Controller"
+puts symbol + "Repository"
+puts symbol + "Presenter"
 ```

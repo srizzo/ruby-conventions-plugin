@@ -1,10 +1,10 @@
 package io.github.srizzo.rubyconventions;
 
-import com.intellij.ide.plugins.PluginManager;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.navigation.GotoRelatedProvider;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.NlsContexts.ListItem;
@@ -33,6 +33,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
+    private static final Logger LOG = Logger.getInstance(RelatedTypeDefinitionsProvider.class.getName());
+
     @NotNull
     public List<? extends GotoRelatedItem> getItems(@NotNull DataContext dataContext) {
         PsiElement elementAtCaret = getElementAtCaret(dataContext);
@@ -42,7 +44,7 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
         try {
             ContainerUtil.addAll(results, getTypeDefinitionRelatedItem(elementAtCaret).iterator());
         } catch (IOException | InterruptedException e) {
-            PluginManager.getLogger().error(e);
+            LOG.error(e);
         }
 
         return results
@@ -93,9 +95,9 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
             }
 
             if (process.exitValue() != 0) {
-                PluginManager.getLogger().error("Process exited with value: " + process.exitValue());
+                LOG.error("Process exited with value: " + process.exitValue());
             }
-            error.lines().forEach(PluginManager.getLogger()::error);
+            error.lines().forEach(LOG::error);
         }
 
         return results;

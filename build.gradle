@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'io.github.srizzo'
-version '0.0.1'
+version '0.0.2'
 
 repositories {
     mavenCentral()
@@ -23,9 +23,14 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
+        <ul>
+            <li>0.0.2 - Small adjustments</li>
+            <li>0.0.1 - Initial release</li>
+        </ul>"""
 }
 test {
     useJUnitPlatform()
+}
+publishPlugin {
+    token = System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken")
 }

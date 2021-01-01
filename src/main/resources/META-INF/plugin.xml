@@ -7,7 +7,7 @@
     Custom Ruby conventions for IntelliJ.
 
     <ul>
-        <li>Add custom mappings of identifiers to ruby Types (Navigate > Related Symbol...)</li>
+        <li>Use a custom script to provide Ruby Type Definitions for <em>Navigate > Related Symbol...</em></li>
     </ul>
 
     ]]></description>
