@@ -1,11 +1,15 @@
 <idea-plugin>
-    <id>io.github.srizzo.ruby_type_conventions</id>
-    <name>Plugin display name here</name>
-    <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+    <id>io.github.srizzo.rubyconventions</id>
+    <name>Ruby Conventions</name>
+    <vendor url="https://github.com/srizzo/ruby-conventions-plugin">Samuel Rizzo</vendor>
 
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
+    Custom Ruby conventions for IntelliJ.
+
+    <ul>
+        <li>Add custom mappings of identifiers to ruby Types (Navigate > Related Symbol...)</li>
+    </ul>
+
     ]]></description>
 
     <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
@@ -14,7 +18,7 @@
     <depends>org.jetbrains.plugins.ruby</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
+        <gotoRelatedProvider implementation="io.github.srizzo.rubyconventions.RelatedTypeDefinitionsProvider"/>
     </extensions>
 
     <actions>
