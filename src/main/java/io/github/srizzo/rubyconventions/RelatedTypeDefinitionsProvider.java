@@ -18,10 +18,12 @@ import com.intellij.util.containers.ContainerUtil;
 import icons.RubyIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.plugins.ruby.ruby.codeInsight.resolve.scope.RElementWithFQN;
+import org.jetbrains.plugins.ruby.ruby.codeInsight.RubyFQNUtil;
+import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.Types;
+import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.fqn.FQN;
 import org.jetbrains.plugins.ruby.ruby.lang.psi.RFile;
 import org.jetbrains.plugins.ruby.ruby.lang.psi.RubyProjectAndLibrariesScope;
-import org.jetbrains.plugins.ruby.ruby.lang.psi.indexes.RubyClassModuleNameIndex;
+import org.jetbrains.plugins.ruby.ruby.lang.psi.holders.RContainer;
 
 import javax.swing.*;
 import java.io.BufferedReader;
@@ -40,7 +42,7 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
         PsiElement elementAtCaret = getElementAtCaret(dataContext);
         if (elementAtCaret == null) return Collections.emptyList();
 
-        List<RElementWithFQN> results = new ArrayList<>();
+        List<RContainer> results = new ArrayList<>();
         try {
             ContainerUtil.addAll(results, getTypeDefinitionRelatedItem(elementAtCaret).iterator());
         } catch (IOException | InterruptedException e) {
@@ -49,25 +51,12 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
 
         return results
                 .stream()
-                .map((result) -> new TypeDefinitionItem(result, result.getFQNWithNesting().toString()))
+                .map((result) -> new TypeDefinitionItem(result))
                 .collect(Collectors.toList());
     }
 
-    @NotNull
-    private String[] getProcessEnv(PsiElement elementAtCaret) {
-        Path contentRoot = ProjectRootManager.getInstance(elementAtCaret.getProject()).getFileIndex()
-                .getContentRootForFile(elementAtCaret.getContainingFile().getVirtualFile()).toNioPath();
-        Map<String, String> env = new HashMap<>(System.getenv());
-        env.put("RCP_FILE_PATH", elementAtCaret.getContainingFile().getVirtualFile().toNioPath().relativize(contentRoot).toFile().toString());
-        env.put("RCP_TEXT", elementAtCaret.getText());
-        env.put("RCP_PSI_PATH", psiPath(elementAtCaret));
-        env.put("RCP_PSI_CLASS", elementAtCaret.getClass().getCanonicalName());
-        env.put("RCP_PSI_TYPE", elementAtCaret.toString());
-        return env.entrySet().stream().map((entry) -> entry.getKey() + "=" + entry.getValue()).toArray(String[]::new);
-    }
-
     @Nullable
-    private Collection<RElementWithFQN> getTypeDefinitionRelatedItem(@NotNull PsiElement elementAtCaret) throws IOException, InterruptedException {
+    private Collection<RContainer> getTypeDefinitionRelatedItem(@NotNull PsiElement elementAtCaret) throws IOException, InterruptedException {
         Path contentRoot = ProjectRootManager.getInstance(elementAtCaret.getProject())
                 .getFileIndex().getContentRootForFile(elementAtCaret.getContainingFile().getVirtualFile()).toNioPath();
         GlobalSearchScope scope = new RubyProjectAndLibrariesScope(elementAtCaret.getProject());
@@ -80,18 +69,25 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
             return Collections.emptyList();
         }
 
-        String[] envArray = getProcessEnv(elementAtCaret);
+        String[] env = getProcessEnv(elementAtCaret);
 
-        Process process = Runtime.getRuntime().exec(script, envArray, pluginScriptsFolder.toFile());
+        Process process = Runtime.getRuntime().exec(script, env, pluginScriptsFolder.toFile());
         process.waitFor();
 
-        List<RElementWithFQN> results = new ArrayList<>();
+        List<RContainer> results = new ArrayList<>();
 
         try (BufferedReader processIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
              BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+
             String line;
             while ((line = processIn.readLine()) != null) {
-                results.addAll(RubyClassModuleNameIndex.find(elementAtCaret.getProject(), line, scope));
+
+                @NotNull List<RContainer> containers = RubyFQNUtil.findContainersByFQN(elementAtCaret.getProject(),
+                        Types.MODULE_OR_CLASS_OR_CONSTANT,
+                        FQN.Builder.fromString(line),
+                        null);
+
+                results.addAll(containers);
             }
 
             if (process.exitValue() != 0) {
@@ -118,14 +114,26 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
         return BaseRefactoringAction.getElementAtCaret(editor, psiFile);
     }
 
+    @NotNull
+    private String[] getProcessEnv(PsiElement elementAtCaret) {
+        Path contentRoot = ProjectRootManager.getInstance(elementAtCaret.getProject()).getFileIndex()
+                .getContentRootForFile(elementAtCaret.getContainingFile().getVirtualFile()).toNioPath();
+        Map<String, String> env = new HashMap<>(System.getenv());
+        env.put("RCP_FILE_PATH", elementAtCaret.getContainingFile().getVirtualFile().toNioPath().relativize(contentRoot).toFile().toString());
+        env.put("RCP_TEXT", elementAtCaret.getText());
+        env.put("RCP_PSI_PATH", psiPath(elementAtCaret));
+        env.put("RCP_PSI_CLASS", elementAtCaret.getClass().getCanonicalName());
+        env.put("RCP_PSI_TYPE", elementAtCaret.toString());
+        return env.entrySet().stream().map((entry) -> entry.getKey() + "=" + entry.getValue()).toArray(String[]::new);
+    }
+
     public static final class TypeDefinitionItem extends GotoRelatedItem {
         @ListItem
         private final String name;
 
-        public TypeDefinitionItem(@NotNull PsiElement element,
-                                  @NotNull @ListItem String name) {
-            super(element, "Type Definition");
-            this.name = name;
+        public TypeDefinitionItem(@NotNull RContainer result) {
+            super(result.getOriginalElement(), "Type Definition");
+            this.name = result.getFQNWithNesting().toString();
         }
 
         @NotNull
