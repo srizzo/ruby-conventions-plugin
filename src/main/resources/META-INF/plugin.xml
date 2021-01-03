@@ -8,6 +8,7 @@
 
     <ul>
         <li>Use a custom script to provide Ruby Type Definitions for <em>Navigate > Related Symbol...</em></li>
+        <li>Use a custom script to provide Symbolic Call Type Inference</li>
     </ul>
 
     ]]></description>
@@ -19,6 +20,10 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <gotoRelatedProvider implementation="io.github.srizzo.rubyconventions.RelatedTypeDefinitionsProvider"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="org.jetbrains.plugins.ruby">
+        <symbolicTypeInferenceProvider implementation="io.github.srizzo.rubyconventions.SymbolicTypeInferenceProvider"/>
     </extensions>
 
     <actions>
