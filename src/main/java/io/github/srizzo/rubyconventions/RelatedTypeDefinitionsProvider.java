@@ -6,12 +6,9 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.NlsContexts.ListItem;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtilCore;
 import com.intellij.refactoring.actions.BaseRefactoringAction;
 import com.intellij.util.containers.ContainerUtil;
@@ -21,21 +18,17 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.RubyFQNUtil;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.Types;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.fqn.FQN;
-import org.jetbrains.plugins.ruby.ruby.lang.psi.RFile;
-import org.jetbrains.plugins.ruby.ruby.lang.psi.RubyProjectAndLibrariesScope;
 import org.jetbrains.plugins.ruby.ruby.lang.psi.holders.RContainer;
 
 import javax.swing.*;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
     private static final Logger LOG = Logger.getInstance(RelatedTypeDefinitionsProvider.class.getName());
+    public static final String SCRIPT = "./go_to_related";
 
     @NotNull
     public List<? extends GotoRelatedItem> getItems(@NotNull DataContext dataContext) {
@@ -43,6 +36,7 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
         if (elementAtCaret == null) return Collections.emptyList();
 
         List<RContainer> results = new ArrayList<>();
+
         try {
             ContainerUtil.addAll(results, getTypeDefinitionRelatedItem(elementAtCaret).iterator());
         } catch (IOException | InterruptedException e) {
@@ -51,59 +45,25 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
 
         return results
                 .stream()
-                .map((result) -> new TypeDefinitionItem(result))
+                .map(TypeDefinitionItem::new)
                 .collect(Collectors.toList());
     }
 
     @Nullable
     private Collection<RContainer> getTypeDefinitionRelatedItem(@NotNull PsiElement elementAtCaret) throws IOException, InterruptedException {
-        Path contentRoot = ProjectRootManager.getInstance(elementAtCaret.getProject())
-                .getFileIndex().getContentRootForFile(elementAtCaret.getContainingFile().getVirtualFile()).toNioPath();
-        GlobalSearchScope scope = new RubyProjectAndLibrariesScope(elementAtCaret.getProject());
+        Path contentRoot = FileUtil.getContentRootPath(elementAtCaret);
+        if (contentRoot == null) return Collections.emptyList();
 
-        String script = "./go_to_related";
+        Map<String, String> env = new HashMap<>(System.getenv());
+        env.put("RCP_TEXT", elementAtCaret.getText());
 
-        Path pluginScriptsFolder = contentRoot.resolve(".rubyconventions");
-
-        if (!Files.exists(pluginScriptsFolder.resolve(script))) {
-            return Collections.emptyList();
-        }
-
-        String[] env = getProcessEnv(elementAtCaret);
-
-        Process process = Runtime.getRuntime().exec(script, env, pluginScriptsFolder.toFile());
-        process.waitFor();
-
-        List<RContainer> results = new ArrayList<>();
-
-        try (BufferedReader processIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
-             BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-
-            String line;
-            while ((line = processIn.readLine()) != null) {
-
-                @NotNull List<RContainer> containers = RubyFQNUtil.findContainersByFQN(elementAtCaret.getProject(),
+        return ProcessUtil.execIfExists(contentRoot, SCRIPT, env).flatMap((line) ->
+                RubyFQNUtil.findContainersByFQN(elementAtCaret.getProject(),
                         Types.MODULE_OR_CLASS_OR_CONSTANT,
                         FQN.Builder.fromString(line),
-                        null);
-
-                results.addAll(containers);
-            }
-
-            if (process.exitValue() != 0) {
-                LOG.error("Process exited with value: " + process.exitValue());
-            }
-            error.lines().forEach(LOG::error);
-        }
-
-        return results;
-    }
-
-    private String psiPath(PsiElement elementAtCaret) {
-        List<? extends PsiElement> parents =
-                new ArrayList<>(PsiTreeUtil.collectParents(elementAtCaret, PsiElement.class, true, x -> x instanceof RFile));
-        Collections.reverse(parents);
-        return parents.stream().map(Object::toString).collect(Collectors.joining("#"));
+                        null)
+                        .stream())
+                .collect(Collectors.toList());
     }
 
     private PsiElement getElementAtCaret(@NotNull DataContext dataContext) {
@@ -112,19 +72,6 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
         if (editor == null || psiFile == null) return null;
 
         return BaseRefactoringAction.getElementAtCaret(editor, psiFile);
-    }
-
-    @NotNull
-    private String[] getProcessEnv(PsiElement elementAtCaret) {
-        Path contentRoot = ProjectRootManager.getInstance(elementAtCaret.getProject()).getFileIndex()
-                .getContentRootForFile(elementAtCaret.getContainingFile().getVirtualFile()).toNioPath();
-        Map<String, String> env = new HashMap<>(System.getenv());
-        env.put("RCP_FILE_PATH", elementAtCaret.getContainingFile().getVirtualFile().toNioPath().relativize(contentRoot).toFile().toString());
-        env.put("RCP_TEXT", elementAtCaret.getText());
-        env.put("RCP_PSI_PATH", psiPath(elementAtCaret));
-        env.put("RCP_PSI_CLASS", elementAtCaret.getClass().getCanonicalName());
-        env.put("RCP_PSI_TYPE", elementAtCaret.toString());
-        return env.entrySet().stream().map((entry) -> entry.getKey() + "=" + entry.getValue()).toArray(String[]::new);
     }
 
     public static final class TypeDefinitionItem extends GotoRelatedItem {
@@ -145,7 +92,6 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
         public String getCustomContainerName() {
             return null;
         }
-
 
         @Nullable
         public Icon getCustomIcon() {

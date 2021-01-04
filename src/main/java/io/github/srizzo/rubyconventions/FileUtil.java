@@ -1,6 +1,7 @@
 package io.github.srizzo.rubyconventions;
 
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.psi.PsiElement;
@@ -14,7 +15,6 @@ public class FileUtil {
     }
 
     public static Path getContentRootPath(PsiElement element) {
-        return getContentRootPath(ProjectRootManager.getInstance(element.getProject())
-                .getFileIndex().getModuleForFile(element.getContainingFile().getVirtualFile()));
+        return getContentRootPath(ModuleUtilCore.findModuleForPsiElement(element));
     }
 }
