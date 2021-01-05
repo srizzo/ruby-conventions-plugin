@@ -4,9 +4,23 @@ Custom Ruby conventions on IntelliJ.
 
 Currently:
 
+- Use a custom script to provide Identifier and Call Types
 - Use a custom script to provide References and Usage Searches
 - Use a custom script to provide Ruby Type Definitions for `Navigate > Related Symbol...`
 - Use a custom script to provide Symbolic Call Type Inference
+
+### Identifier and Call Type Provider
+
+Example:
+
+`cat .rubyconventions/type_provider`
+
+```bash
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+echo $RCP_TEXT | gsed -E 's/(^|_)([a-z])/\U\2/g'
+```
 
 ### Reference Contributor
 
@@ -26,7 +40,7 @@ echo "${name}Controller"
 echo "${name}Repository"
 echo "${name}Presenter"
 ```
-    
+
 ### Reference Search
 
 Example:

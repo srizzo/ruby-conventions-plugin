@@ -7,6 +7,7 @@
     Custom Ruby conventions on IntelliJ.
 
     <ul>
+        <li>Use a custom script to provide Identifier and Call Types</li>
         <li>Use a custom script to provide References and Usage Searches</li>
         <li>Use a custom script to provide Symbolic Call Type Inference</li>
         <li>Use a custom script to provide Ruby Type Definitions for <em>Navigate > Related Symbol...</em></li>
@@ -26,6 +27,7 @@
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.plugins.ruby">
+        <rubyTypeProvider implementation="io.github.srizzo.rubyconventions.TypeProvider"/>
         <symbolicTypeInferenceProvider implementation="io.github.srizzo.rubyconventions.SymbolicTypeInferenceProvider"/>
     </extensions>
 

@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'io.github.srizzo'
-version '0.0.4'
+version '0.0.5'
 
 repositories {
     mavenCentral()
@@ -24,6 +24,7 @@ intellij {
 patchPluginXml {
     changeNotes """
         <ul>
+            <li>0.0.5 - Use a custom script to provide Identifier and Call Types</li>
             <li>0.0.4 - Use a custom script to provide References and Usage Searches</li>
             <li>0.0.3 - Use a custom script to provide Symbolic Call Type Inference</li>
             <li>0.0.2 - Small adjustments</li>

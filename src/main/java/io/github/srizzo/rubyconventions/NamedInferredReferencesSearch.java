@@ -35,7 +35,7 @@ public final class NamedInferredReferencesSearch extends QueryExecutorBase<PsiRe
             if (contentRoot == null) return;
 
             Map<String, String> env = new HashMap<>(System.getenv());
-            env.put("RCP_TEXT", ((RClass) elementToSearch).getName());
+            env.put("RCP_TEXT", ((RClass) elementToSearch).getFQNWithNesting().toString());
 
             SearchRequestCollector optimizer = params.getOptimizer();
             SearchScope searchScope = RubyPsiUtil.restrictScopeToRubyFiles(params.getEffectiveSearchScope());

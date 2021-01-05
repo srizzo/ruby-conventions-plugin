@@ -34,7 +34,7 @@ public class NameInferredReferenceContributor extends PsiReferenceContributor {
                             if (!(element instanceof RIdentifier)) return PsiReference.EMPTY_ARRAY;
 
                             Path contentRoot = FileUtil.getContentRootPath(element);
-                            if (contentRoot == null) return null;
+                            if (contentRoot == null) return PsiReference.EMPTY_ARRAY;
 
                             Map<String, String> env = new HashMap<>(System.getenv());
                             env.put("RCP_TEXT", ((RIdentifier) element).getName());
