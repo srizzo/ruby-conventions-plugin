@@ -1,27 +1,21 @@
 package io.github.srizzo.rubyconventions;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Stream;
 
 public class ProcessUtil {
     private static final Logger LOG = Logger.getInstance(ProcessUtil.class.getName());
 
     @NotNull
-    public static Stream<String> execIfExists(Path contentRoot, String cmd, Map<String, String> env) throws IOException, InterruptedException {
-        Path pluginScriptsFolder = contentRoot.resolve(".rubyconventions");
-
-        if (!Files.exists(pluginScriptsFolder.resolve(cmd))) return Stream.empty();
-
-        Process process = Runtime.getRuntime().exec(cmd, toEnvArray(env), pluginScriptsFolder.toFile());
+    public static String[] execScript(VirtualFile scriptPath, Map<String, String> env) throws IOException, InterruptedException {
+        VirtualFile workingDir = scriptPath.getParent();
+        Process process = Runtime.getRuntime().exec(scriptPath.toNioPath().toString(), toEnvArray(env), workingDir.toNioPath().toFile());
         process.waitFor();
 
         try (BufferedReader processIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -32,7 +26,7 @@ public class ProcessUtil {
             }
             error.lines().forEach(LOG::error);
 
-            return Arrays.stream(processIn.lines().toArray(String[]::new));
+            return processIn.lines().toArray(String[]::new);
         }
     }
 

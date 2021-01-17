@@ -4,7 +4,6 @@ import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.navigation.GotoRelatedProvider;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.util.NlsContexts.ListItem;
 import com.intellij.psi.PsiElement;
@@ -15,33 +14,25 @@ import com.intellij.util.containers.ContainerUtil;
 import icons.RubyIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.plugins.ruby.ruby.codeInsight.RubyFQNUtil;
-import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.Types;
-import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.fqn.FQN;
-import org.jetbrains.plugins.ruby.ruby.lang.psi.holders.RContainer;
+import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.classes.RClass;
 
 import javax.swing.*;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
-    private static final Logger LOG = Logger.getInstance(RelatedTypeDefinitionsProvider.class.getName());
-    public static final String SCRIPT = "./go_to_related";
 
     @NotNull
     public List<? extends GotoRelatedItem> getItems(@NotNull DataContext dataContext) {
         PsiElement elementAtCaret = getElementAtCaret(dataContext);
         if (elementAtCaret == null) return Collections.emptyList();
 
-        List<RContainer> results = new ArrayList<>();
+        List<RClass> results = new ArrayList<>();
 
-        try {
-            ContainerUtil.addAll(results, getTypeDefinitionRelatedItem(elementAtCaret).iterator());
-        } catch (IOException | InterruptedException e) {
-            LOG.error(e);
-        }
+        ContainerUtil.addAll(results, getTypeDefinitionRelatedItem(elementAtCaret).iterator());
 
         return results
                 .stream()
@@ -50,20 +41,8 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
     }
 
     @Nullable
-    private Collection<RContainer> getTypeDefinitionRelatedItem(@NotNull PsiElement elementAtCaret) throws IOException, InterruptedException {
-        Path contentRoot = FileUtil.getContentRootPath(elementAtCaret);
-        if (contentRoot == null) return Collections.emptyList();
-
-        Map<String, String> env = new HashMap<>(System.getenv());
-        env.put("RCP_TEXT", elementAtCaret.getText());
-
-        return ProcessUtil.execIfExists(contentRoot, SCRIPT, env).flatMap((line) ->
-                RubyFQNUtil.findContainersByFQN(elementAtCaret.getProject(),
-                        Types.MODULE_OR_CLASS_OR_CONSTANT,
-                        FQN.Builder.fromString(line),
-                        null)
-                        .stream())
-                .collect(Collectors.toList());
+    private Collection<RClass> getTypeDefinitionRelatedItem(@NotNull PsiElement elementAtCaret) {
+        return RubyConventions.processGoToRelated(FileUtil.getModule(elementAtCaret), elementAtCaret.getText());
     }
 
     private PsiElement getElementAtCaret(@NotNull DataContext dataContext) {
@@ -78,7 +57,7 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
         @ListItem
         private final String name;
 
-        public TypeDefinitionItem(@NotNull RContainer result) {
+        public TypeDefinitionItem(@NotNull RClass result) {
             super(result.getOriginalElement(), "Type Definition");
             this.name = result.getFQNWithNesting().toString();
         }

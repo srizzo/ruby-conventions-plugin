@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'io.github.srizzo'
-version '0.0.5'
+version '0.0.6'
 
 repositories {
     mavenCentral()
@@ -19,11 +19,13 @@ dependencies {
 intellij {
     version '2020.3.1'
     type 'IU'
-    plugins = ['org.jetbrains.plugins.ruby:203.6682.115']
+    plugins = ['org.jetbrains.plugins.ruby:203.6682.115', 'com.google.ide-perf:1.0.3']
+
 }
 patchPluginXml {
     changeNotes """
         <ul>
+            <li>0.0.6 - Use a custom script to provide Identifier and Call Types</li>
             <li>0.0.5 - Use a custom script to provide Identifier and Call Types</li>
             <li>0.0.4 - Use a custom script to provide References and Usage Searches</li>
             <li>0.0.3 - Use a custom script to provide Symbolic Call Type Inference</li>
@@ -36,4 +38,8 @@ test {
 }
 publishPlugin {
     token = System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken")
+}
+
+runIde {
+    jvmArgs "-Djdk.attach.allowAttachSelf=true"
 }

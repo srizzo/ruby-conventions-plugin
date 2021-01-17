@@ -11,7 +11,7 @@ public class NamedInferredReferenceRequestResultProcessor extends RequestResultP
     protected final PsiElement myReferredElement;
 
     public NamedInferredReferenceRequestResultProcessor(@NotNull PsiElement referredElement) {
-        super(new Object[]{referredElement});
+        super(referredElement);
         this.myReferredElement = referredElement;
     }
 
