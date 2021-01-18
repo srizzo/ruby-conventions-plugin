@@ -32,17 +32,14 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
 
         List<RClass> results = new ArrayList<>();
 
-        ContainerUtil.addAll(results, getTypeDefinitionRelatedItem(elementAtCaret).iterator());
+        ContainerUtil.addAll(results, RubyConventions.processGoToRelated(
+                FileUtil.getModule(elementAtCaret),
+                elementAtCaret.getText()).iterator());
 
         return results
                 .stream()
                 .map(TypeDefinitionItem::new)
                 .collect(Collectors.toList());
-    }
-
-    @Nullable
-    private Collection<RClass> getTypeDefinitionRelatedItem(@NotNull PsiElement elementAtCaret) {
-        return RubyConventions.processGoToRelated(FileUtil.getModule(elementAtCaret), elementAtCaret.getText());
     }
 
     private PsiElement getElementAtCaret(@NotNull DataContext dataContext) {

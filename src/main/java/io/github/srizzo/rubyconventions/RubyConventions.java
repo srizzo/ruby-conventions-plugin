@@ -21,49 +21,52 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class RubyConventions {
-    private static final String REFERENCES_SCRIPT = "references";
-    private static final String TYPE_PROVIDER_SCRIPT = "type_provider_script";
-    private static final String GO_TO_RELATED_SCRIPT = "go_to_related";
+    private static final String TYPE_PROVIDER_SCRIPT = "type_provider";
     private static final String SYMBOLIC_TYPE_INFERENCE_SCRIPT = "symbolic_type_inference";
+    private static final String REFERENCES_SCRIPT = "references";
+    private static final String GO_TO_RELATED_SCRIPT = "go_to_related";
     private static final String REFERENCED_AS_SCRIPT = "referenced_as";
 
-    private static final Key<Map<String, CachedValue<String[]>>> PROCESS_TYPES_FROM_TEXT_CACHE = Key.create("RubyConventions.processTypesFromText");
-    private static final Key<Map<String, CachedValue<String[]>>> PROCESS_REFERENCES_SEARCH_CACHE = Key.create("RubyConventions.referencesSearch");
+    private static final Key<Map<String, CachedValue<String[]>>> TYPE_PROVIDER_CACHE = Key.create("RubyConventions.TYPE_PROVIDER_CACHE");
+    private static final Key<Map<String, CachedValue<String[]>>> SYMBOLIC_TYPE_INFERENCE_CACHE = Key.create("RubyConventions.SYMBOLIC_TYPE_INFERENCE_CACHE");
+    private static final Key<Map<String, CachedValue<String[]>>> REFERENCES_CACHE = Key.create("RubyConventions.REFERENCES_CACHE");
+    private static final Key<Map<String, CachedValue<String[]>>> GO_TO_RELATED_CACHE = Key.create("RubyConventions.GO_TO_RELATED_CACHE");
+    private static final Key<Map<String, CachedValue<String[]>>> REFERENCED_AS_CACHE = Key.create("RubyConventions.REFERENCED_AS_CACHE");
 
     private static final int TYPES_FROM_TEXT_MIN_LENGTH = 2;
 
     private static final Logger LOG = Logger.getInstance(RubyConventions.class.getName());
 
     public static RClass processTypeProvider(Module module, String text) {
-        return processTypesFromText(module, TYPE_PROVIDER_SCRIPT, text).stream().findFirst().orElse(null);
+        return processTypesFromText(module, TYPE_PROVIDER_SCRIPT, text, TYPE_PROVIDER_CACHE).stream().findFirst().orElse(null);
     }
 
     public static Collection<RClass> processReferences(Module module, String text) {
-        return processTypesFromText(module, REFERENCES_SCRIPT, text);
+        return processTypesFromText(module, REFERENCES_SCRIPT, text, REFERENCES_CACHE);
     }
 
     public static Collection<RClass> processGoToRelated(Module module, String text) {
-        return processTypesFromText(module, GO_TO_RELATED_SCRIPT, text);
+        return processTypesFromText(module, GO_TO_RELATED_SCRIPT, text, GO_TO_RELATED_CACHE);
     }
 
     public static RClass processSymbolicTypeInference(Module module, String text) {
-        return processTypesFromText(module, SYMBOLIC_TYPE_INFERENCE_SCRIPT, text).stream().findFirst().orElse(null);
+        return processTypesFromText(module, SYMBOLIC_TYPE_INFERENCE_SCRIPT, text, SYMBOLIC_TYPE_INFERENCE_CACHE).stream().findFirst().orElse(null);
     }
 
     public static Collection<String> processReferencesSearch(Module module, String className) {
         VirtualFile scriptFile = getScriptFile(module, REFERENCED_AS_SCRIPT);
         if (scriptFile == null) return Collections.emptyList();
 
-        return Arrays.asList(getCachedOrProcess(PROCESS_REFERENCES_SEARCH_CACHE, module, scriptFile, className));
+        return Arrays.asList(getCachedOrProcess(REFERENCED_AS_CACHE, module, scriptFile, className));
     }
 
-    private static Collection<RClass> processTypesFromText(Module module, String script, String text) {
+    private static Collection<RClass> processTypesFromText(Module module, String script, String text, Key<Map<String, CachedValue<String[]>>> cacheKey) {
         if (text.length() < TYPES_FROM_TEXT_MIN_LENGTH) return Collections.emptyList();
 
         VirtualFile scriptFile = getScriptFile(module, script);
         if (scriptFile == null) return Collections.emptyList();
 
-        String[] results = getCachedOrProcess(PROCESS_TYPES_FROM_TEXT_CACHE, module, scriptFile, text);
+        String[] results = getCachedOrProcess(cacheKey, module, scriptFile, text);
 
         return Arrays.stream(results)
                 .map((line) ->

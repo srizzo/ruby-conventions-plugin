@@ -23,7 +23,7 @@ public class TypeProvider extends AbstractRubyTypeProvider {
         Module module = FileUtil.getModule(expression);
         if (module == null) return null;
 
-        RClass found = RubyConventions.processTypeProvider(module, ((RStubBasedPsiElementBase) expression).getElementType().toString());
+        RClass found = RubyConventions.processTypeProvider(module, ((RStubBasedPsiElementBase) expression).getName());
         if (found != null) return RTypeUtil.getTypeByClass(found);
 
         return null;
