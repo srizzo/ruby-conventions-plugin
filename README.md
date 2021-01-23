@@ -41,22 +41,6 @@ echo "${name}Repository"
 echo "${name}Presenter"
 ```
 
-### Reference Search
-
-Example:
-
-`cat .rubyconventions/referenced_as`
-
-```ruby
-#!/usr/bin/env ruby
-
-require 'active_support/core_ext/string'
-
-# given an class name
-# provide pontential references
-puts ENV['RCP_TEXT'].delete(':').underscore
-```
-
 ### Related Ruby Type Definitions provider
 
 Example:
@@ -91,3 +75,23 @@ Example:
 set -Eeuo pipefail
 echo $RCP_TEXT | gsed -E 's/(^|_)([a-z])/\U\2/g'
 ```
+### Script for both Symbolic Call Type Inference and Ruby Type Definitions
+
+Provide `.rubyconventions/types_from_text`
+
+### Reference Search
+
+Example:
+
+`cat .rubyconventions/referenced_as`
+
+```ruby
+#!/usr/bin/env ruby
+
+require 'active_support/core_ext/string'
+
+# given an class name
+# provide pontential references
+puts ENV['RCP_TEXT'].delete(':').underscore
+```
+

@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'io.github.srizzo'
-version '0.0.7'
+version '0.0.8'
 
 repositories {
     mavenCentral()
@@ -25,6 +25,7 @@ intellij {
 patchPluginXml {
     changeNotes """
         <ul>
+            <li>0.0.8 - Provide a single script for both Symbolic Call Type Inference and Ruby Type Definitions</li>
             <li>0.0.7 - Better caching strategy</li>
             <li>0.0.6 - Performance improvements and result caching</li>
             <li>0.0.5 - Use a custom script to provide Identifier and Call Types</li>

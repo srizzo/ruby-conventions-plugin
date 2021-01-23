@@ -13,18 +13,21 @@ public class ProcessUtil {
     private static final Logger LOG = Logger.getInstance(ProcessUtil.class.getName());
 
     @NotNull
-    public static String[] execScript(VirtualFile scriptPath, Map<String, String> env) throws IOException, InterruptedException {
-        VirtualFile workingDir = scriptPath.getParent();
-        Process process = Runtime.getRuntime().exec(scriptPath.toNioPath().toString(), toEnvArray(env), workingDir.toNioPath().toFile());
+    public static String[] execScript(VirtualFile scriptFile, Map<String, String> env) throws IOException, InterruptedException {
+        VirtualFile workingDir = scriptFile.getParent();
+        String scriptPath = scriptFile.toNioPath().toString();
+        Process process = Runtime.getRuntime().exec(scriptPath, toEnvArray(env), workingDir.toNioPath().toFile());
         process.waitFor();
 
         try (BufferedReader processIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
              BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
 
             if (process.exitValue() != 0) {
-                LOG.error("Process exited with value: " + process.exitValue());
+                LOG.error(scriptPath + " exited with value: " + process.exitValue());
             }
-            error.lines().forEach(LOG::error);
+
+            String[] stderr = error.lines().toArray(String[]::new);
+            if (stderr.length > 0) LOG.error(String.join("\n", stderr));
 
             return processIn.lines().toArray(String[]::new);
         }
