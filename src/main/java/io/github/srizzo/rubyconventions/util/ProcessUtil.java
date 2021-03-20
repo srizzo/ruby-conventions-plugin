@@ -1,4 +1,4 @@
-package io.github.srizzo.rubyconventions;
+package io.github.srizzo.rubyconventions.util;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Map;
 
 public class ProcessUtil {
@@ -29,7 +30,10 @@ public class ProcessUtil {
             String[] stderr = error.lines().toArray(String[]::new);
             if (stderr.length > 0) LOG.error(String.join("\n", stderr));
 
-            return processIn.lines().toArray(String[]::new);
+            String[] results = processIn.lines().toArray(String[]::new);
+
+            LOG.debug("Processed RCP_TEXT=" + env.get("RCP_TEXT") + " " + scriptPath + " with result " + Arrays.toString(results));
+            return results;
         }
     }
 

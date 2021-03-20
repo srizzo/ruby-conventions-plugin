@@ -1,5 +1,6 @@
-package io.github.srizzo.rubyconventions;
+package io.github.srizzo.rubyconventions.symbolictypeinferenceprovider;
 
+import io.github.srizzo.rubyconventions.RubyConventions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.symbolicExecution.SymbolicExecutionContext;

@@ -1,6 +1,8 @@
-package io.github.srizzo.rubyconventions;
+package io.github.srizzo.rubyconventions.typeprovider;
 
 import com.intellij.openapi.module.Module;
+import io.github.srizzo.rubyconventions.RubyConventions;
+import io.github.srizzo.rubyconventions.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.AbstractRubyTypeProvider;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.structure.Symbol;
@@ -23,7 +25,7 @@ public class TypeProvider extends AbstractRubyTypeProvider {
         Module module = FileUtil.getModule(expression);
         if (module == null) return null;
 
-        RClass found = RubyConventions.processTypeProvider(module, ((RStubBasedPsiElementBase) expression).getName());
+        RClass found = RubyConventions.processTypeProvider(module, expression.getName());
         if (found != null) return RTypeUtil.getTypeByClass(found);
 
         return null;

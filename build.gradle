@@ -1,10 +1,10 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.6.5'
+    id 'org.jetbrains.intellij' version '0.7.2'
 }
 
 group 'io.github.srizzo'
-version '0.0.8.1'
+version '0.0.8.2'
 
 repositories {
     mavenCentral()
@@ -24,7 +24,7 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-        Add plugin logo"""
+        Performance optimization"""
 }
 test {
     useJUnitPlatform()

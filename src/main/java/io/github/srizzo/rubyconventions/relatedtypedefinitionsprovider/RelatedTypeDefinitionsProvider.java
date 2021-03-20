@@ -1,4 +1,4 @@
-package io.github.srizzo.rubyconventions;
+package io.github.srizzo.rubyconventions.relatedtypedefinitionsprovider;
 
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.navigation.GotoRelatedProvider;
@@ -12,13 +12,14 @@ import com.intellij.psi.util.PsiUtilCore;
 import com.intellij.refactoring.actions.BaseRefactoringAction;
 import com.intellij.util.containers.ContainerUtil;
 import icons.RubyIcons;
+import io.github.srizzo.rubyconventions.RubyConventions;
+import io.github.srizzo.rubyconventions.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.classes.RClass;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +35,7 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
 
         ContainerUtil.addAll(results, RubyConventions.processGoToRelated(
                 FileUtil.getModule(elementAtCaret),
-                elementAtCaret.getText()).iterator());
+                elementAtCaret.getText()));
 
         return results
                 .stream()

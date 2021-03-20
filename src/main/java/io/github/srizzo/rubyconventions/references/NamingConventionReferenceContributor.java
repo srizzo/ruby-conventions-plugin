@@ -1,12 +1,16 @@
-package io.github.srizzo.rubyconventions;
+package io.github.srizzo.rubyconventions.references;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
+import io.github.srizzo.rubyconventions.RubyConventions;
+import io.github.srizzo.rubyconventions.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.ruby.ruby.lang.psi.variables.RIdentifier;
 
-public class NameInferredReferenceContributor extends PsiReferenceContributor {
+import java.util.Arrays;
+
+public class NamingConventionReferenceContributor extends PsiReferenceContributor {
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
         registrar.registerReferenceProvider(PlatformPatterns.psiElement(RIdentifier.class),
@@ -17,9 +21,8 @@ public class NameInferredReferenceContributor extends PsiReferenceContributor {
                                                                  @NotNull ProcessingContext context) {
                         if (!(element instanceof RIdentifier)) return PsiReference.EMPTY_ARRAY;
 
-                        return RubyConventions.processReferences(FileUtil.getModule(element), ((RIdentifier) element).getName())
-                                .stream()
-                                .map(found -> new NameInferredReference((RIdentifier) element, found))
+                        return Arrays.stream(RubyConventions.processReferences(FileUtil.getModule(element), ((RIdentifier) element).getName()))
+                                .map(found -> new NamingConventionClassReference((RIdentifier) element, found))
                                 .toArray(PsiReference[]::new);
                     }
                 });

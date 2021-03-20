@@ -1,39 +1,42 @@
 <idea-plugin>
-    <id>io.github.srizzo.rubyconventions</id>
-    <name>Ruby Conventions</name>
-    <vendor url="https://github.com/srizzo/ruby-conventions-plugin">Samuel Rizzo</vendor>
+  <id>io.github.srizzo.rubyconventions</id>
+  <name>Ruby Conventions</name>
+  <vendor url="https://github.com/srizzo/ruby-conventions-plugin">Samuel Rizzo</vendor>
 
-    <description><![CDATA[
+  <description><![CDATA[
     Custom Ruby conventions on IntelliJ.
 
     <ul>
-        <li>Use a custom script to provide Identifier and Call Types</li>
-        <li>Use a custom script to provide Symbolic Call Type Inference</li>
-        <li>Use a custom script to provide Ruby Type Definitions for <em>Navigate > Related Symbol...</em></li>
-        <li>Use a custom script to provide References and Usage Searches</li>
+      <li>Use a custom script to provide Identifier and Call Types</li>
+      <li>Use a custom script to provide Symbolic Call Type Inference</li>
+      <li>Use a custom script to provide Ruby Type Definitions for <em>Navigate > Related Symbol...</em></li>
+      <li>Use a custom script to provide References and Usage Searches</li>
     </ul>
 
     Docs: https://github.com/srizzo/ruby-conventions-plugin
-
     ]]></description>
 
-    <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-         on how to target different products -->
-    <depends>com.intellij.modules.platform</depends>
-    <depends>org.jetbrains.plugins.ruby</depends>
+  <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>org.jetbrains.plugins.ruby</depends>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <gotoRelatedProvider implementation="io.github.srizzo.rubyconventions.RelatedTypeDefinitionsProvider"/>
-        <referencesSearch implementation="io.github.srizzo.rubyconventions.NamedInferredReferencesSearch"/>
-        <psi.referenceContributor language="ruby" implementation="io.github.srizzo.rubyconventions.NameInferredReferenceContributor"/>
-    </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <gotoRelatedProvider
+        implementation="io.github.srizzo.rubyconventions.relatedtypedefinitionsprovider.RelatedTypeDefinitionsProvider" />
+    <referencesSearch
+        implementation="io.github.srizzo.rubyconventions.referencessearch.NamingConventionReferencesSearch" />
+    <psi.referenceContributor language="ruby"
+                              implementation="io.github.srizzo.rubyconventions.references.NamingConventionReferenceContributor" />
+  </extensions>
 
-    <extensions defaultExtensionNs="org.jetbrains.plugins.ruby">
-        <rubyTypeProvider implementation="io.github.srizzo.rubyconventions.TypeProvider"/>
-        <symbolicTypeInferenceProvider implementation="io.github.srizzo.rubyconventions.SymbolicTypeInferenceProvider"/>
-    </extensions>
+  <extensions defaultExtensionNs="org.jetbrains.plugins.ruby">
+    <rubyTypeProvider implementation="io.github.srizzo.rubyconventions.typeprovider.TypeProvider" />
+    <symbolicTypeInferenceProvider
+        implementation="io.github.srizzo.rubyconventions.symbolictypeinferenceprovider.SymbolicTypeInferenceProvider" />
+  </extensions>
 
-    <actions>
-        <!-- Add your actions here -->
-    </actions>
+  <actions>
+    <!-- Add your actions here -->
+  </actions>
 </idea-plugin>
