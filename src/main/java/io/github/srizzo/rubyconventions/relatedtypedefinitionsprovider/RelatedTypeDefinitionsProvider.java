@@ -70,7 +70,7 @@ public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
             return null;
         }
 
-        @Nullable
+        @NotNull
         public Icon getCustomIcon() {
             return RubyIcons.Ruby.Ruby;
         }

@@ -43,48 +43,49 @@ public class RubyConventions {
     private static final Key<Map<String, CachedValue<RClass[]>>> SYMBOLIC_TYPE_INFERENCE_CACHE = Key.create("RubyConventions.SYMBOLIC_TYPE_INFERENCE_CACHE");
     private static final Key<Map<String, CachedValue<RClass[]>>> REFERENCES_CACHE = Key.create("RubyConventions.REFERENCES_CACHE");
 
-    public static Collection<String> processReferencesSearch(Module module, String className) {
-        return Arrays.asList(getCachedTextResultsOrProcess(className, module, REFERENCED_AS_CACHE, REFERENCED_AS_SCRIPT));
+    public static Collection<String> processReferencesSearch(@NotNull Module module, String className) {
+        return Arrays.asList(getCachedTextResultsOrProcess(className, REFERENCED_AS_SCRIPT, module, REFERENCED_AS_CACHE));
     }
 
-    public static RClass processTypeProvider(Module module, String text) {
-        return firstOrNull(getCachedTypeResultsOrProcess(module, TYPE_PROVIDER_SCRIPT, text, TYPE_PROVIDER_CACHE));
+    public static RClass processTypeProvider(@NotNull Module module, String text) {
+        return firstOrNull(getCachedTypeResultsOrProcess(text, TYPE_PROVIDER_SCRIPT, module, TYPE_PROVIDER_CACHE));
     }
 
-    public static RClass[] processReferences(Module module, String text) {
-        return getCachedTypeResultsOrProcess(module, REFERENCES_SCRIPT, text, REFERENCES_CACHE);
-    }
-
-
-    public static RClass processSymbolicTypeInference(Module module, String text) {
-        return firstOrNull(getCachedTypeResultsOrProcess(module, SYMBOLIC_TYPE_INFERENCE_SCRIPT, text, SYMBOLIC_TYPE_INFERENCE_CACHE));
+    public static RClass[] processReferences(@NotNull Module module, String text) {
+        return getCachedTypeResultsOrProcess(text, REFERENCES_SCRIPT, module, REFERENCES_CACHE);
     }
 
 
-    public static RClass[] processGoToRelated(Module module, String text) {
-        return getCachedTypeResultsOrProcess(module, GO_TO_RELATED_SCRIPT, text, GO_TO_RELATED_CACHE);
+    public static RClass processSymbolicTypeInference(@NotNull Module module, String text) {
+        return firstOrNull(getCachedTypeResultsOrProcess(text, SYMBOLIC_TYPE_INFERENCE_SCRIPT, module, SYMBOLIC_TYPE_INFERENCE_CACHE));
     }
 
-    private static RClass[] getCachedTypeResultsOrProcess(Module module, String scriptName, String text, Key<Map<String, CachedValue<RClass[]>>> cacheStorageKey) {
+
+    public static RClass[] processGoToRelated(@NotNull Module module, String text) {
+        return getCachedTypeResultsOrProcess(text, GO_TO_RELATED_SCRIPT, module, GO_TO_RELATED_CACHE);
+    }
+
+    private static RClass[] getCachedTypeResultsOrProcess(String text, String scriptName, @NotNull Module module, Key<Map<String, CachedValue<RClass[]>>> cacheStorageKey) {
         if (text == null || text.length() < TYPES_FROM_TEXT_MIN_LENGTH) return EMPTY_RCLASS_ARRAY;
-        VirtualFile scriptFile = getScriptFile(module, scriptName);
+        @Nullable VirtualFile scriptFile = getScriptFile(module, scriptName);
+        if (scriptFile == null) return EMPTY_RCLASS_ARRAY;
         return cached(text, (String value) -> lookupTypes(module.getProject(), process(scriptFile, text)), module, cacheStorageKey, scriptFile);
     }
 
-    private static String[] getCachedTextResultsOrProcess(String text, Module module, Key<Map<String, CachedValue<String[]>>> cacheStorageKey, String scriptName) {
-        VirtualFile scriptFile = getScriptFile(module, scriptName);
+    private static String[] getCachedTextResultsOrProcess(String text, String scriptName, @NotNull Module module, Key<Map<String, CachedValue<String[]>>> cacheStorageKey) {
+        @Nullable VirtualFile scriptFile = getScriptFile(module, scriptName);
+        if (scriptFile == null) return EMPTY_STRING_ARRAY;
         return cached(text, (String value) -> process(scriptFile, value), module, cacheStorageKey, scriptFile);
     }
 
     @Nullable
-    private static VirtualFile getScriptFile(Module module, String script) {
+    private static VirtualFile getScriptFile(@NotNull Module module, String script) {
         VirtualFile contentRoot = FileUtil.getContentRootPath(module);
-        if (contentRoot == null) return null;
         return contentRoot.findFileByRelativePath(".rubyconventions/" + script);
     }
 
     @NotNull
-    private static <T> T[] cached(String lookupKey, Function<String, T[]> cacheFunction, Module module, Key<Map<String, CachedValue<T[]>>> cacheStorageKey, VirtualFile cacheDependency) {
+    private static <T> T[] cached(String lookupKey, Function<String, T[]> cacheFunction, @NotNull Module module, Key<Map<String, CachedValue<T[]>>> cacheStorageKey, @NotNull VirtualFile cacheDependency) {
         return getCacheStorage(cacheStorageKey, module)
                 .computeIfAbsent(lookupKey, key -> {
                     var cachedValue = CachedValuesManager.getManager(module.getProject())
@@ -99,7 +100,7 @@ public class RubyConventions {
     }
 
     @NotNull
-    private static <T> Map<String, CachedValue<T>> getCacheStorage(Key<Map<String, CachedValue<T>>> cacheStorageKey, Module module) {
+    private static <T> Map<String, CachedValue<T>> getCacheStorage(Key<Map<String, CachedValue<T>>> cacheStorageKey, @NotNull Module module) {
         Map<String, CachedValue<T>> cacheStorage = module.getUserData(cacheStorageKey);
         if (cacheStorage == null) {
             cacheStorage = new ConcurrentHashMap<>();

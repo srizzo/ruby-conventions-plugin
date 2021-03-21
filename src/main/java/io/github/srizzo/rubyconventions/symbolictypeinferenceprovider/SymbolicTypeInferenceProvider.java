@@ -1,5 +1,8 @@
 package io.github.srizzo.rubyconventions.symbolictypeinferenceprovider;
 
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.psi.PsiElement;
 import io.github.srizzo.rubyconventions.RubyConventions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,13 +25,19 @@ public class SymbolicTypeInferenceProvider implements org.jetbrains.plugins.ruby
                                             @NotNull SymbolicExpressionProvider symbolicExpressionProvider,
                                             @NotNull TypeInferenceComponent typeInferenceComponent) {
 
-        RClass found = RubyConventions.processSymbolicTypeInference(callContext.getAnchor().getModule(), symbolicCall.getName());
+        @Nullable PsiElement invocationPoint = callContext.getInvocationPoint();
+        if (invocationPoint == null) return null;
+
+        @Nullable Module module = ModuleUtil.findModuleForPsiElement(invocationPoint);
+        if (module == null) return null;
+
+        @Nullable RClass found = RubyConventions.processSymbolicTypeInference(module, symbolicCall.getName());
         if (found == null) return null;
 
-        RType type = RTypeUtil.getTypeByClass(found);
+        @Nullable RType type = RTypeUtil.getTypeByClass(found);
         if (RTypeUtil.isNullOrEmpty(type)) return null;
 
-        SymbolicExpression expression = symbolicExpressionProvider.createSymbolicVariable();
+        @NotNull SymbolicExpression expression = symbolicExpressionProvider.createSymbolicVariable();
         typeInferenceComponent.updateSymbolicExpressionType(expression, type);
         return expression;
     }

@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'io.github.srizzo'
-version '0.0.8.2'
+version '0.0.8.3'
 
 repositories {
     mavenCentral()
@@ -24,7 +24,7 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-        Performance optimization"""
+        Gracefully handle missing scripts"""
 }
 test {
     useJUnitPlatform()
