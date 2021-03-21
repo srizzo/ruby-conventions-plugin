@@ -61,10 +61,12 @@ public class RubyConventions {
     }
 
 
+    @NotNull
     public static RClass[] processGoToRelated(@NotNull Module module, String text) {
         return getCachedTypeResultsOrProcess(text, GO_TO_RELATED_SCRIPT, module, GO_TO_RELATED_CACHE);
     }
 
+    @NotNull
     private static RClass[] getCachedTypeResultsOrProcess(String text, String scriptName, @NotNull Module module, Key<Map<String, CachedValue<RClass[]>>> cacheStorageKey) {
         if (text == null || text.length() < TYPES_FROM_TEXT_MIN_LENGTH) return EMPTY_RCLASS_ARRAY;
         @Nullable VirtualFile scriptFile = getScriptFile(module, scriptName);
@@ -72,16 +74,11 @@ public class RubyConventions {
         return cached(text, (String value) -> lookupTypes(module.getProject(), process(scriptFile, text)), module, cacheStorageKey, scriptFile);
     }
 
+    @NotNull
     private static String[] getCachedTextResultsOrProcess(String text, String scriptName, @NotNull Module module, Key<Map<String, CachedValue<String[]>>> cacheStorageKey) {
         @Nullable VirtualFile scriptFile = getScriptFile(module, scriptName);
         if (scriptFile == null) return EMPTY_STRING_ARRAY;
         return cached(text, (String value) -> process(scriptFile, value), module, cacheStorageKey, scriptFile);
-    }
-
-    @Nullable
-    private static VirtualFile getScriptFile(@NotNull Module module, String script) {
-        VirtualFile contentRoot = FileUtil.getContentRootPath(module);
-        return contentRoot.findFileByRelativePath(".rubyconventions/" + script);
     }
 
     @NotNull
@@ -139,5 +136,12 @@ public class RubyConventions {
     private static RClass firstOrNull(RClass[] array) {
         if (array.length == 0) return null;
         return array[0];
+    }
+
+    @Nullable
+    private static VirtualFile getScriptFile(@NotNull Module module, String script) {
+        @Nullable VirtualFile contentRoot = FileUtil.getContentRootPath(module);
+        if (contentRoot == null) return null;
+        return contentRoot.findFileByRelativePath(".rubyconventions/" + script);
     }
 }

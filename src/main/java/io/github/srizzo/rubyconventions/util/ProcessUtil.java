@@ -12,6 +12,7 @@ import java.util.Map;
 
 public class ProcessUtil {
     private static final Logger LOG = Logger.getInstance(ProcessUtil.class.getName());
+    private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     @NotNull
     public static String[] execScript(VirtualFile scriptFile, Map<String, String> env) throws IOException, InterruptedException {
@@ -24,11 +25,12 @@ public class ProcessUtil {
              BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
 
             if (process.exitValue() != 0) {
-                LOG.error(scriptPath + " exited with value: " + process.exitValue());
-            }
+                String[] stderr = error.lines().toArray(String[]::new);
+                if (stderr.length > 0) LOG.error(String.join("\n", stderr));
+                LOG.error(scriptPath + " exited with value: " + process.exitValue() + " ");
 
-            String[] stderr = error.lines().toArray(String[]::new);
-            if (stderr.length > 0) LOG.error(String.join("\n", stderr));
+                return EMPTY_STRING_ARRAY;
+            }
 
             String[] results = processIn.lines().toArray(String[]::new);
 

@@ -4,6 +4,7 @@ import com.intellij.openapi.module.Module;
 import io.github.srizzo.rubyconventions.RubyConventions;
 import io.github.srizzo.rubyconventions.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.AbstractRubyTypeProvider;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.structure.Symbol;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.types.RType;
@@ -21,10 +22,10 @@ public class TypeProvider extends AbstractRubyTypeProvider {
     public RType createTypeByRExpression(@NotNull RExpression expression) {
         if (!(expression instanceof RIdentifier) && !(expression instanceof RCall)) return null;
 
-        Module module = FileUtil.getModule(expression);
+        @Nullable Module module = FileUtil.getModule(expression);
         if (module == null) return null;
 
-        RClass found = RubyConventions.processTypeProvider(module, expression.getName());
+        @Nullable RClass found = RubyConventions.processTypeProvider(module, expression.getName());
         if (found != null) return RTypeUtil.getTypeByClass(found);
 
         return null;

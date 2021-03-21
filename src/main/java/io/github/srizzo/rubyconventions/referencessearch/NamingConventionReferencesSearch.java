@@ -14,6 +14,7 @@ import io.github.srizzo.rubyconventions.RubyConventions;
 import io.github.srizzo.rubyconventions.references.NamingConventionClassReference;
 import io.github.srizzo.rubyconventions.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.ruby.ruby.lang.psi.RubyPsiUtil;
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.classes.RClass;
 import org.jetbrains.plugins.ruby.ruby.lang.psi.variables.RIdentifier;
@@ -26,10 +27,10 @@ public final class NamingConventionReferencesSearch extends QueryExecutorBase<Ps
     }
 
     public void processQuery(@NotNull SearchParameters params, @NotNull Processor<? super PsiReference> consumer) {
-        PsiElement target = params.getElementToSearch();
+        @NotNull PsiElement target = params.getElementToSearch();
         if (!(target instanceof RClass)) return;
 
-        Module module = FileUtil.getModule(target);
+        @Nullable Module module = FileUtil.getModule(target);
         if (module == null) return;
 
         String fullClassName = ((RClass) target).getFQNWithNesting().toString();

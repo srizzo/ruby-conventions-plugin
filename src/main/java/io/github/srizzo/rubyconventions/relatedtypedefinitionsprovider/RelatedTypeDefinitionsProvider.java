@@ -5,6 +5,7 @@ import com.intellij.navigation.GotoRelatedProvider;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.NlsContexts.ListItem;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -26,15 +27,19 @@ import java.util.stream.Collectors;
 
 public class RelatedTypeDefinitionsProvider extends GotoRelatedProvider {
 
+    public static final List<GotoRelatedItem> EMPTY_LIST = Collections.emptyList();
+
     @NotNull
     public List<? extends GotoRelatedItem> getItems(@NotNull DataContext dataContext) {
         PsiElement elementAtCaret = getElementAtCaret(dataContext);
-        if (elementAtCaret == null) return Collections.emptyList();
+        if (elementAtCaret == null) return EMPTY_LIST;
+
+        @Nullable Module module = FileUtil.getModule(elementAtCaret);
+        if (module == null) return EMPTY_LIST;
 
         List<RClass> results = new ArrayList<>();
-
         ContainerUtil.addAll(results, RubyConventions.processGoToRelated(
-                FileUtil.getModule(elementAtCaret),
+                module,
                 elementAtCaret.getText()));
 
         return results
