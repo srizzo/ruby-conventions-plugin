@@ -2,7 +2,9 @@
 
 Custom Ruby conventions on IntelliJ.
 
-Currently:
+Install from https://plugins.jetbrains.com/plugin/15726-ruby-conventions.
+
+Features:
 
 - Use a custom script to provide Identifier and Call Types
 - Use a custom script to provide References and Usage Searches

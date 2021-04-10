@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'io.github.srizzo'
-version '0.0.8.4'
+version '0.0.9'
 
 repositories {
     mavenCentral()
@@ -17,17 +17,20 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2020.3.2'
     type 'IU'
-    plugins = ['org.jetbrains.plugins.ruby:203.6682.115', 'com.google.ide-perf:1.0.3']
-    runIde.ideDirectory = "/Applications/IntelliJ IDEA.app/Contents"
+    localPath = "/Applications/IntelliJ IDEA.app/Contents"
+    runPluginVerifier.localPaths = ["/Applications/IntelliJ IDEA.app/Contents"]
+    sandboxDirectory = "/usr/local/var/idea-sandbox"
+    plugins = ['org.jetbrains.plugins.ruby:211.6693.111',
+               'com.google.ide-perf:1.1.0']
 }
 patchPluginXml {
     changeNotes """
-        Improved error handling"""
+      Compatibility with IntelliJ 2021.1
+    """
 }
 test {
-    useJUnitPlatform()
+    systemProperty "idea.home.path", "/Applications/IntelliJ IDEA.app/Contents"
 }
 runIde {
     jvmArgs "-Djdk.attach.allowAttachSelf=true"
